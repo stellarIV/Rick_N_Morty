@@ -137,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
 class SearchWidget extends StatefulWidget {
   final List<Character> characters;
 
-  const SearchWidget({Key? key, required this.characters}) : super(key: key);
+  SearchWidget({required this.characters});
 
   @override
   _SearchWidgetState createState() => _SearchWidgetState();
@@ -146,6 +146,7 @@ class SearchWidget extends StatefulWidget {
 class _SearchWidgetState extends State<SearchWidget> {
   final TextEditingController _controller = TextEditingController();
   List<Character> _filteredCharacters = [];
+  String _selectedFilter = 'Name'; // Default filter criterion
 
   @override
   void initState() {
@@ -155,10 +156,18 @@ class _SearchWidgetState extends State<SearchWidget> {
 
   void _handleSearch(String query) {
     setState(() {
-      _filteredCharacters = widget.characters
-          .where(
-              (char) => char.name.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      _filteredCharacters = widget.characters.where((char) {
+        switch (_selectedFilter) {
+          case 'Name':
+            return char.name.toLowerCase().contains(query.toLowerCase());
+          case 'Status':
+            return char.status.toLowerCase().contains(query.toLowerCase());
+          case 'Species':
+            return char.species.toLowerCase().contains(query.toLowerCase());
+          default:
+            return true;
+        }
+      }).toList();
     });
   }
 
@@ -166,25 +175,50 @@ class _SearchWidgetState extends State<SearchWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Search and filter"),
+        title: Text("Search and Filter"),
         backgroundColor: Color.fromARGB(255, 77, 246, 122),
       ),
       body: Column(
         children: <Widget>[
           Container(
             margin: EdgeInsets.all(5),
-            child: TextField(
-              controller: _controller,
-              onChanged: _handleSearch,
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Character Name',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide:
-                      BorderSide(color: Color.fromARGB(255, 15, 71, 118)),
+            child: Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    onChanged: _handleSearch,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Character Name',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide:
+                            BorderSide(color: Color.fromARGB(255, 15, 71, 118)),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(width: 10),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.filter_list),
+                  onSelected: (String value) {
+                    setState(() {
+                      _selectedFilter = value;
+                      _handleSearch(_controller
+                          .text); // Reapply the filter with the new criterion
+                    });
+                  },
+                  itemBuilder: (BuildContext context) {
+                    return ['Name', 'Status', 'Species'].map((String choice) {
+                      return PopupMenuItem<String>(
+                        value: choice,
+                        child: Text(choice),
+                      );
+                    }).toList();
+                  },
+                ),
+              ],
             ),
           ),
           Expanded(
