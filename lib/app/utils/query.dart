@@ -1,6 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-getAllCharachters() => gql(r"""
+String getAllCharachters = r"""
   query GetCharachters ($page:Int){
     characters (page:$page) {
       info {
@@ -14,7 +14,34 @@ getAllCharachters() => gql(r"""
         image
         type
         name
+        location{
+          name
+        }
       }
     }
   }
-""");
+""";
+String getCharacterById = r"""
+  query GetCharacter($id: ID!) {
+    character(id: $id) {
+      id
+      name
+      status
+      species
+      type
+      gender
+      origin {
+        name
+      }
+      image
+      episode {
+        episode
+        name
+      }
+      location {
+        name
+        dimension
+      }
+    }
+  }
+""";

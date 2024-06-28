@@ -10,27 +10,38 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context, ref) {
-    return ProviderScope(
-      child: Consumer(builder: (context, ref, child) {
-        final client = ref.read(gqlProvider);
-        return GraphQLProvider(
-          client: client,
-          child: MaterialApp(
-              title: 'Rich & Morty',
-              theme: ThemeData(
-                colorScheme:
-                    ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
-                useMaterial3: true,
-              ),
-              home: const HomeScreen()),
-        );
-      }),
+  Widget build(BuildContext context) {
+    final HttpLink httpLink = HttpLink(
+      'https://rickandmortyapi.com/graphql',
     );
-  }
+    ValueNotifier<GraphQLClient> client = ValueNotifier(
+      GraphQLClient(
+        link: httpLink,
+        // The default store is the InMemoryStore, which does NOT persist to disk
+        cache: GraphQLCache(store: HiveStore()),
+      ),
+    );
+
+    // return ProviderScope(
+    //   child: Consumer(builder: (context, ref, child) {
+    //     final client = ref.read(gqlProvider);
+    return GraphQLProvider(
+      client: client,
+      child: MaterialApp(
+          title: 'Rich & Morty',
+          theme: ThemeData(
+            colorScheme:
+                ColorScheme.fromSeed(seedColor: Colors.lightGreenAccent),
+            useMaterial3: true,
+          ),
+          home: const HomeScreen()),
+    );
+  } //,
+  //);
+  //}
 }
